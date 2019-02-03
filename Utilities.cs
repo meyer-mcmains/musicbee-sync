@@ -25,7 +25,7 @@ namespace MusicBeePlugin
         {
             const int LEVELS = 4;
             string[] path = file.Split('\\');
-            var slicedArray = path.Take(path.Length - LEVELS).ToArray();
+            string[] slicedArray = path.Take(path.Length - LEVELS).ToArray();
             return string.Join("/", slicedArray) + "/";
         }
 
@@ -34,7 +34,7 @@ namespace MusicBeePlugin
         {
             const int LEVELS = 3;
             string[] path = file.Split('\\');
-            var slicedArray = path.Skip(path.Length - LEVELS).ToArray();
+            string[] slicedArray = path.Skip(path.Length - LEVELS).ToArray();
             return string.Join("/", slicedArray);
         }
 
@@ -44,6 +44,14 @@ namespace MusicBeePlugin
             string[] arrLine = File.ReadAllLines(file);
             arrLine[3] = $"numFiles={totalFiles}";
             File.WriteAllLines(file, arrLine);
+        }
+
+        //Get the Album Name from the Path
+        public string GetAlbumName(string file)
+        {
+            string noPath = RemovePath(file);
+            string[] slicedArray = noPath.Split('/');
+            return slicedArray[1];
         }
     }
 }
