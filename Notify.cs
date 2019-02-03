@@ -176,7 +176,7 @@ namespace MusicBeePlugin
             cover.Save(stream, ImageFormat.Jpeg);
 
             TransferUtility transferUitlity = new TransferUtility(s3Client);
-            transferUitlity.Upload(stream, s3Bucket, (size == fullSize) ? NewCoverKey(album) : UpdatedCoverKey(album));
+            transferUitlity.Upload(stream, s3Bucket, (size == fullSize ? NewCoverKey(album) : UpdatedCoverKey(album)));
         }
 
         private bool ThumbnailCallback()

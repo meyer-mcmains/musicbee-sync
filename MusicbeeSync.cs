@@ -504,7 +504,7 @@ namespace MusicBeePlugin
                 if (File.Exists($"{libraryLocation}{libraryRoot}/{file}"))
                 {
                     syncPanel.logsLabel.Text = $"Uploading {file}";
-                    //transferUitlity.Upload($"{libraryLocation}{libraryRoot}/{file}", bucketName, $"{libraryRoot}/{file}");
+                    transferUitlity.Upload($"{libraryLocation}{libraryRoot}/{file}", bucketName, $"{libraryRoot}/{file}");
                     uploadProgress.Increment(1);
                     int fileIndex = syncPanel.uploadCheckListBox.Items.IndexOf(file);
                     syncPanel.uploadCheckListBox.Items.Remove(file);
