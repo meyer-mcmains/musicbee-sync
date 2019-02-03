@@ -46,7 +46,6 @@ namespace MusicBeePlugin
             File.WriteAllLines(file, arrLine);
         }
 
-        //Get the Album Name from the Path
         public string GetAlbumName(string file)
         {
             string noPath = RemovePath(file);
