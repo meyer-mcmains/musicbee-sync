@@ -35,7 +35,7 @@ namespace MusicBeePlugin
             about.Type = PluginType.General;
             about.VersionMajor = 2;
             about.VersionMinor = 0;
-            about.Revision = 0;
+            about.Revision = 1;
             about.MinInterfaceVersion = MinInterfaceVersion;
             about.MinApiRevision = MinApiRevision;
             about.ReceiveNotifications = (ReceiveNotificationFlags.PlayerEvents | ReceiveNotificationFlags.TagEvents);
@@ -473,6 +473,7 @@ namespace MusicBeePlugin
                 downloadProgress.Increment(1);
                 int fileIndex = syncPanel.downloadCheckListBox.Items.IndexOf(file);
                 syncPanel.downloadCheckListBox.Items.Remove(file);
+                mbApiInterface.Library_AddFileToLibrary($"{libraryLocation}{libraryRoot}/{file}", LibraryCategory.Music);
             }
         }
 
