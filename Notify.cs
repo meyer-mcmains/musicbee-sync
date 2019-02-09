@@ -140,12 +140,12 @@ namespace MusicBeePlugin
 
         private string FormatNewAlbum(string url)
         {
-            return $"<img src='{url}' style='border: none; -ms-interpolation-mode: bicubic; max-width: 100% margin-bottom: 10px; width: {fullSize}px;' width='{fullSize}'>";
+            return $"<img src='https://s3.amazonaws.com//{s3Bucket}/{url}' style='background-image: url(https://via.placeholder.com/525x525?text=No%20Album%20Art); border: none; -ms-interpolation-mode: bicubic; max-width: 100% margin-bottom: 10px; height: {fullSize}px; width: {fullSize}px;' width='{fullSize}'>";
         }
 
         private string FormatUpdatedAlbum(string url)
         {
-            return $"<img src='{url}' style='border: none; -ms-interpolation-mode: bicubic; max-width: 100%; margin: 5px; width: {thumbSize}px;' width='{thumbSize}'>";
+            return $"<img src='https://s3.amazonaws.com//{s3Bucket}/{url}' style='background-image: url(https://via.placeholder.com/150x150?text=No%20Album%20Art); border: none; -ms-interpolation-mode: bicubic; max-width: 100%; margin: 5px; height: {thumbSize}px; width: {thumbSize}px;' width='{thumbSize}'>";
         }
 
         private List<string> GetAlbums(List<string> newFiles, int size)
@@ -170,13 +170,16 @@ namespace MusicBeePlugin
             byte[] image = null;
             mbApiInterface.Library_GetArtworkEx(file, 0, true, ref pictureLocations, ref pictureUrl, ref image);
 
-            MemoryStream ms = new MemoryStream(image);
-            Image cover = Image.FromStream(ms).GetThumbnailImage(size, size, ThumbnailCallback, IntPtr.Zero);
-            Stream stream = new MemoryStream();
-            cover.Save(stream, ImageFormat.Jpeg);
+            if (image != null)
+            {
+                MemoryStream ms = new MemoryStream(image);
+                Image cover = Image.FromStream(ms).GetThumbnailImage(size, size, ThumbnailCallback, IntPtr.Zero);
+                Stream stream = new MemoryStream();
+                cover.Save(stream, ImageFormat.Jpeg);
 
-            TransferUtility transferUitlity = new TransferUtility(s3Client);
-            transferUitlity.Upload(stream, s3Bucket, (size == fullSize ? NewCoverKey(album) : UpdatedCoverKey(album)));
+                TransferUtility transferUitlity = new TransferUtility(s3Client);
+                transferUitlity.Upload(stream, s3Bucket, (size == fullSize ? NewCoverKey(album) : UpdatedCoverKey(album)));
+            }
         }
 
         private bool ThumbnailCallback()
@@ -186,12 +189,12 @@ namespace MusicBeePlugin
 
         private string NewCoverKey(string albumName)
         {
-            return $"https://s3.amazonaws.com//{s3Bucket}/covers/{albumName.Replace(" ", "").ToLower()}.jpg";
+            return $"covers/{albumName.Replace(" ", "").ToLower()}.jpg";
         }
 
         private string UpdatedCoverKey(string albumName)
         {
-            return $"https://s3.amazonaws.com//{s3Bucket}/covers/{albumName.Replace(" ", "").ToLower()}-thumb.jpg";
+            return $"covers/{albumName.Replace(" ", "").ToLower()}-thumb.jpg";
         }
     }
 }
