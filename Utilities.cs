@@ -42,11 +42,11 @@ namespace MusicBeePlugin
         public void WriteTotalToIni(string file, int totalFiles)
         {
             string[] arrLine = File.ReadAllLines(file);
-            arrLine[3] = $"numFiles={totalFiles}";
+            arrLine[5] = $"numFiles={totalFiles}";
             File.WriteAllLines(file, arrLine);
         }
 
-        //Get the Album Name from the Path
+        // Get the Album Name from the Path
         public string GetAlbumName(string file)
         {
             string noPath = RemovePath(file);

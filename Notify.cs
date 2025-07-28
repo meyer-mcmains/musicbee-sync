@@ -168,7 +168,7 @@ namespace MusicBeePlugin
             PictureLocations pictureLocations = PictureLocations.None;
             string pictureUrl = null;
             byte[] image = null;
-            mbApiInterface.Library_GetArtworkEx(file, 0, true, ref pictureLocations, ref pictureUrl, ref image);
+            mbApiInterface.Library_GetArtworkEx(file, 0, true, out pictureLocations, out pictureUrl, out image);
 
             if (image != null)
             {

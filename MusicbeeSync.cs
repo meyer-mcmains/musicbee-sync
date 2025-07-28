@@ -1,6 +1,4 @@
-﻿using Amazon;
-using Amazon.Runtime;
-using Amazon.Runtime.CredentialManagement;
+﻿using Amazon.Runtime;
 using Amazon.S3;
 using Amazon.S3.IO;
 using Amazon.S3.Model;
@@ -33,23 +31,25 @@ namespace MusicBeePlugin
             about.Author = "Meyer McMains";
             about.TargetApplication = "";
             about.Type = PluginType.General;
-            about.VersionMajor = 2;
+            about.VersionMajor = 3;
             about.VersionMinor = 0;
-            about.Revision = 1;
+            about.Revision = 0;
             about.MinInterfaceVersion = MinInterfaceVersion;
             about.MinApiRevision = MinApiRevision;
             about.ReceiveNotifications = (ReceiveNotificationFlags.PlayerEvents | ReceiveNotificationFlags.TagEvents);
-            about.ConfigurationPanelHeight = 195;
+            about.ConfigurationPanelHeight = 300;
             return about;
         }
 
-        private ComboBox bucketRegionComboBox;
-        private TextBox bucketNameTxtBox;
-        private TextBox libraryRootTxtBox;
+        private TextBox accessKeyTextBox;
+        private TextBox secretKeyTextBox;
+        private TextBox bucketNameTextBox;
+        private TextBox libraryRootTextBox;
         private CheckBox enableEmailCheckbox;
-        private TextBox emailBucketNameTxtBox;
-        private TextBox emailSendFromTxtBox;
-        private TextBox emailSendToTxtBox;
+        private TextBox emailBucketNameTextBox;
+        private TextBox emailSendFromTextBox;
+        private TextBox emailSendToTextBox;
+        private TextBox s3ServiceUrlTextBox;
         private int totalFiles = 0;
 
         public bool Configure(IntPtr panelHandle)
@@ -63,101 +63,99 @@ namespace MusicBeePlugin
             if (panelHandle != IntPtr.Zero)
             {
                 Panel configPanel = (Panel)Panel.FromHandle(panelHandle);
+                TableLayoutPanel tableLayoutPanel = new TableLayoutPanel();
+                tableLayoutPanel.Dock = DockStyle.Fill;
+                tableLayoutPanel.ColumnCount = 2;
+                configPanel.Controls.Add(tableLayoutPanel);
 
-                // bucketRegion
-                Label bucketRegionLabel = new Label();
-                bucketRegionLabel.AutoSize = true;
-                bucketRegionLabel.Location = new Point(0, 5);
-                bucketRegionLabel.Text = "Bucket Region";
-                bucketRegionComboBox = new ComboBox();
-                bucketRegionComboBox.Bounds = new Rectangle(110, 0, 200, bucketRegionComboBox.Height);
-                foreach (var region in RegionEndpoint.EnumerableAllRegions)
-                {
-                    bucketRegionComboBox.Items.Add(region.SystemName);
-                }
+                // accessKey 
+                Label accessKeyLabel = new Label { Text = "Access Key" };
+                tableLayoutPanel.Controls.Add(accessKeyLabel, 0, 0);
+
+                accessKeyTextBox = new TextBox();
+                tableLayoutPanel.Controls.Add(accessKeyTextBox, 1, 0);
+
+                // accessKey
+                Label secretKeyLabel = new Label { Text = "Secret Key" };
+                tableLayoutPanel.Controls.Add(secretKeyLabel, 0, 1);
+
+                secretKeyTextBox = new TextBox();
+                tableLayoutPanel.Controls.Add(secretKeyTextBox, 1, 1);
+
+                // s3 service url
+                Label s3ServiceUrl = new Label { Text = "S3 Service URL" };
+                tableLayoutPanel.Controls.Add(s3ServiceUrl, 0, 2);
+
+                s3ServiceUrlTextBox = new TextBox();
+                tableLayoutPanel.Controls.Add(s3ServiceUrlTextBox, 1, 2);
 
                 // bucketName
-                Label bucketNameLabel = new Label();
-                bucketNameLabel.AutoSize = true;
-                bucketNameLabel.Location = new Point(0, 30);
-                bucketNameTxtBox = new TextBox();
-                bucketNameLabel.Text = "Bucket Name";
-                bucketNameTxtBox.Bounds = new Rectangle(110, 25, 200, bucketNameTxtBox.Height);
+                Label bucketNameLabel = new Label { Text = "Bucket Name" };
+                tableLayoutPanel.Controls.Add(bucketNameLabel, 0, 3);
+
+                bucketNameTextBox = new TextBox();
+                tableLayoutPanel.Controls.Add(bucketNameTextBox, 1, 3);
 
                 // libraryRoot
-                Label libraryRootLabel = new Label();
-                libraryRootLabel.AutoSize = true;
-                libraryRootLabel.Location = new Point(0, 55);
-                libraryRootLabel.Text = "Library Root";
-                libraryRootTxtBox = new TextBox();
-                libraryRootTxtBox.Bounds = new Rectangle(110, 50, 200, libraryRootTxtBox.Height);
+                Label libraryRootLabel = new Label { Text = "Library Root" };
+                tableLayoutPanel.Controls.Add(libraryRootLabel, 0, 4);
 
-                // EMAIL NOTIFICATIONS
+                libraryRootTextBox = new TextBox();
+                tableLayoutPanel.Controls.Add(libraryRootTextBox, 1, 4);
+
+                /// EMAIL NOTIFICATIONS
 
                 // Enable Notifications
-                Label enableEmailsLabel = new Label();
-                enableEmailsLabel.AutoSize = true;
-                enableEmailsLabel.Location = new Point(0, 80);
-                enableEmailsLabel.Text = "Send Emails";
+                Label enableEmailsLabel = new Label { Text = "Send Emails" };
+                tableLayoutPanel.Controls.Add(enableEmailsLabel, 0, 5);
+
                 enableEmailCheckbox = new CheckBox();
-                enableEmailCheckbox.Bounds = new Rectangle(110, 75, 200, enableEmailCheckbox.Height);
+                tableLayoutPanel.Controls.Add(enableEmailCheckbox, 1, 5);
 
                 // Email Images S3 Bucket Name
-                Label emailBucketLabel = new Label();
-                emailBucketLabel.AutoSize = true;
-                emailBucketLabel.Location = new Point(0, 105);
-                emailBucketLabel.Text = "Email Image Bucket";
-                emailBucketNameTxtBox = new TextBox();
-                emailBucketNameTxtBox.Bounds = new Rectangle(110, 100, 200, emailBucketNameTxtBox.Height);
+                Label emailBucketLabel = new Label { Text = "Email Image Bucket" };
+                tableLayoutPanel.Controls.Add(emailBucketLabel, 0, 6);
+
+                emailBucketNameTextBox = new TextBox();
+                tableLayoutPanel.Controls.Add(emailBucketNameTextBox, 1, 6);
 
                 // Send From Address
-                Label emailSendFromLabel = new Label();
-                emailSendFromLabel.AutoSize = true;
-                emailSendFromLabel.Location = new Point(0, 130);
-                emailSendFromLabel.Text = "Send From Address";
-                emailSendFromTxtBox = new TextBox();
-                emailSendFromTxtBox.Bounds = new Rectangle(110, 125, 200, emailSendFromTxtBox.Height);
+                Label emailSendFromLabel = new Label { Text = "Send From Address" };
+                tableLayoutPanel.Controls.Add(emailSendFromLabel, 0, 7);
+
+                emailSendFromTextBox = new TextBox();
+                tableLayoutPanel.Controls.Add(emailSendFromTextBox, 1, 7);
 
                 // Send To Addresses
-                Label emailSendToLabel = new Label();
-                emailSendToLabel.AutoSize = true;
-                emailSendToLabel.Location = new Point(0, 155);
-                emailSendToLabel.Text = "Send To Addresses, Delimite Addresses With A Space";
-                emailSendToTxtBox = new TextBox();
-                emailSendToTxtBox.Bounds = new Rectangle(0, 175, 500, emailSendFromTxtBox.Height);
+                Label emailSendToLabel = new Label { Text = "Send To Addresses, Delimite Addresses With A Space" };
+                tableLayoutPanel.Controls.Add(emailSendToLabel, 0, 8);
 
-                // load settings from ini
-                if (File.Exists(dataPath))
+                emailSendToTextBox = new TextBox();
+                tableLayoutPanel.Controls.Add(emailSendToTextBox, 1, 8);
+
+                string[] config = File.Exists(dataPath) ? File.ReadAllLines(dataPath) : new string[] { };
+                var controlsEnumerator = tableLayoutPanel.Controls.GetEnumerator();
+
+                for (var i = 0; controlsEnumerator.MoveNext() == true; i++)
                 {
-                    string[] config = File.ReadAllLines(dataPath);
-                    bucketRegionComboBox.SelectedItem = (config.Length > 0) ? utils.GetIniValue(config[0]) : string.Empty;
-                    bucketNameTxtBox.Text = (config.Length > 1) ? utils.GetIniValue(config[1]) : string.Empty;
-                    libraryRootTxtBox.Text = (config.Length > 2) ? utils.GetIniValue(config[2]) : string.Empty;
-                    totalFiles = (config.Length > 3) ? Convert.ToInt16(utils.GetIniValue(config[3])) : 0;
-                    enableEmailCheckbox.Checked = (config.Length > 4) ? Convert.ToBoolean(utils.GetIniValue(config[4])) : false;
-                    emailBucketNameTxtBox.Text = (config.Length > 5) ? utils.GetIniValue(config[5]) : string.Empty;
-                    emailSendFromTxtBox.Text = (config.Length > 6) ? utils.GetIniValue(config[6]) : string.Empty;
-                    emailSendToTxtBox.Text = (config.Length > 7) ? utils.GetIniValue(config[7]) : string.Empty;
-                }
+                    var control = controlsEnumerator.Current;
 
-                // add the controls
-                configPanel.Controls.AddRange(new Control[] {
-                    bucketRegionLabel,
-                    bucketRegionComboBox,
-                    bucketNameLabel,
-                    bucketNameTxtBox,
-                    libraryRootLabel,
-                    libraryRootTxtBox,
-                    enableEmailsLabel,
-                    enableEmailCheckbox,
-                    emailBucketLabel,
-                    emailBucketNameTxtBox,
-                    emailSendFromLabel,
-                    emailSendFromTxtBox,
-                    emailSendToLabel,
-                    emailSendToTxtBox
-                });
+                    if (control is TextBox)
+                    {
+                        var textBox = (TextBox)control;
+                        var textBoxIndex = i / 2;
+                        textBox.Text = config.Length > textBoxIndex ? utils.GetIniValue(config[textBoxIndex]) : String.Empty;
+                        textBox.Dock = DockStyle.Fill;
+                    }
+
+                    if (control is Label)
+                    {
+                        Label label = (Label)control;
+                        label.TextAlign = ContentAlignment.MiddleRight;
+                    }
+                }
             }
+
             return false;
         }
 
@@ -166,14 +164,16 @@ namespace MusicBeePlugin
         {
             string dataPath = $"{mbApiInterface.Setting_GetPersistentStoragePath()}{configFile}";
             File.WriteAllLines(dataPath, new string[] {
-                $"bucketRegion={bucketRegionComboBox.SelectedItem}",
-                $"bucketName={bucketNameTxtBox.Text}",
-                $"libraryRoot={libraryRootTxtBox.Text}",
+                $"accessKey={accessKeyTextBox.Text.Trim()}",
+                $"secretKey={secretKeyTextBox.Text.Trim()}",
+                $"s3BucketUrl={s3ServiceUrlTextBox.Text.Trim()}",
+                $"bucketName={bucketNameTextBox.Text.Trim()}",
+                $"libraryRoot={libraryRootTextBox.Text.Trim()}",
                 $"numFiles={totalFiles}",
                 $"emailEnabled={enableEmailCheckbox.Checked}",
-                $"emailBucketName={emailBucketNameTxtBox.Text}",
-                $"emailSendFrom={emailSendFromTxtBox.Text}",
-                $"emailSendTo={emailSendToTxtBox.Text}"
+                $"emailBucketName={emailBucketNameTextBox.Text.Trim()}",
+                $"emailSendFrom={emailSendFromTextBox.Text.Trim()}",
+                $"emailSendTo={emailSendToTextBox.Text.Trim()}"
             });
         }
 
@@ -247,7 +247,6 @@ namespace MusicBeePlugin
                         return;
                 }
                 mbApiInterface.MB_AddPanel(syncPanel, PluginPanelDock.MainPanel);
-                syncPanel.bucketRegionLabel.Text = $"Bucket Region: {utils.GetIniValue(config[0])}";
                 syncPanel.bucketNameLabel.Text = $"Bucket Name: {utils.GetIniValue(config[1])}";
                 syncPanel.libraryRootLabel.Text = $"Library Root: {utils.GetIniValue(config[2])}";
                 syncPanel.totalFilesLabel.Text = $"Total Files: {utils.GetIniValue(config[3])}";
@@ -270,7 +269,7 @@ namespace MusicBeePlugin
 
         private List<string> musicLibrary;
         private string libraryLocation = null;
-        private IAmazonS3 client;
+        private IAmazonS3 s3Client;
         private bool stop;
 
         private async Task SyncAsync()
@@ -281,48 +280,53 @@ namespace MusicBeePlugin
             string dataPath = $"{mbApiInterface.Setting_GetPersistentStoragePath()}{configFile}";
 
             string[] settings = File.ReadAllLines(dataPath);
-            string bucketRegion = utils.GetIniValue(settings[0]);
-            string bucketName = utils.GetIniValue(settings[1]);
-            string libraryRoot = utils.GetIniValue(settings[2]);
-            totalFiles = Convert.ToInt16(utils.GetIniValue(settings[3]));
+            string accessKey = utils.GetIniValue(settings[0]);
+            string secretKey = utils.GetIniValue(settings[1]);
+            string serviceUrl = utils.GetIniValue(settings[2]);
+            string bucketName = utils.GetIniValue(settings[3]);
+            string libraryRoot = utils.GetIniValue(settings[4]);
+
+            totalFiles = Convert.ToInt16(utils.GetIniValue(settings[5]));
 
             string[] library = null;
-            CredentialProfileStoreChain chain = new CredentialProfileStoreChain();
 
-            if (chain.TryGetAWSCredentials("default", out AWSCredentials awsCredentials))
+            var credentials = new BasicAWSCredentials(accessKey, secretKey);
+            s3Client = new AmazonS3Client(credentials, new AmazonS3Config
             {
-                client = new AmazonS3Client(RegionEndpoint.GetBySystemName(bucketRegion));
-                mbApiInterface.Library_QueryFilesEx("domain=Library", ref library);
-                musicLibrary = library.ToList();
-                libraryLocation = utils.GetLibraryLocation(library[0]);
+                ServiceURL = serviceUrl
+            });
 
-                if (totalFiles == 0)
-                {
-                    syncPanel.logsLabel.Text = "Determining number of files in S3 bucket";
-                    CountFiles(client, bucketName, libraryRoot);
-                    syncPanel.logsLabel.Text = $"Number of files to scan is {totalFiles}";
-                    utils.WriteTotalToIni(dataPath, totalFiles);
-                    syncPanel.syncProgressBar.Maximum = totalFiles;
-                    syncPanel.totalFilesLabel.Text = $"Total Files: {totalFiles}";
-                }
-                else
-                {
-                    syncPanel.syncProgressBar.Maximum = totalFiles;
-                }
+            mbApiInterface.Library_QueryFilesEx("domain=Library", out library);
+            musicLibrary = library.ToList();
+            libraryLocation = utils.GetLibraryLocation(library[0]);
 
-                totalFiles = 0;
-                await ListRemoteLibrary(client, bucketName);
+            if (totalFiles == 0)
+            {
+                syncPanel.logsLabel.Text = "Determining number of files in S3 bucket";
+                CountFiles(s3Client, bucketName, libraryRoot);
+                syncPanel.logsLabel.Text = $"Number of files to scan is {totalFiles}";
                 utils.WriteTotalToIni(dataPath, totalFiles);
-
-                foreach (var file in musicLibrary)
-                {
-                    syncPanel.uploadCheckListBox.Items.Add(utils.RemovePath(file));
-                    syncPanel.logsLabel.Text = $"Adding {utils.RemovePath(file)} to upload list";
-                }
-                syncPanel.logsLabel.Text = "Finished scanning files";
-                PostScan();
+                syncPanel.syncProgressBar.Maximum = totalFiles;
+                syncPanel.totalFilesLabel.Text = $"Total Files: {totalFiles}";
             }
+            else
+            {
+                syncPanel.syncProgressBar.Maximum = totalFiles;
+            }
+
+            totalFiles = 0;
+            await ListRemoteLibrary(s3Client, bucketName);
+            utils.WriteTotalToIni(dataPath, totalFiles);
+
+            foreach (var file in musicLibrary)
+            {
+                syncPanel.uploadCheckListBox.Items.Add(utils.RemovePath(file));
+                syncPanel.logsLabel.Text = $"Adding {utils.RemovePath(file)} to upload list";
+            }
+            syncPanel.logsLabel.Text = "Finished scanning files";
+            PostScan();
         }
+
 
         // Recursively Get Total Files in the S3 Bucket
         private void CountFiles(IAmazonS3 client, string bucketName, string directory)
@@ -383,7 +387,7 @@ namespace MusicBeePlugin
             }
             catch (Exception e)
             {
-                syncPanel.logsLabel.Text = $"Exception: { e.ToString()}";
+                syncPanel.logsLabel.Text = $"Exception: {e.ToString()}";
             }
         }
 
@@ -453,8 +457,8 @@ namespace MusicBeePlugin
             syncPanel.downloadTableLayout.Controls.Remove(syncPanel.startDownloadButton);
             string dataPath = $"{mbApiInterface.Setting_GetPersistentStoragePath()}{configFile}";
             string[] settings = File.ReadAllLines(dataPath);
-            string bucketName = utils.GetIniValue(settings[1]);
-            string libraryRoot = utils.GetIniValue(settings[2]);
+            string bucketName = utils.GetIniValue(settings[2]);
+            string libraryRoot = utils.GetIniValue(settings[3]);
 
             NewProgressBar downloadProgress = new NewProgressBar();
             downloadProgress.Maximum = syncPanel.downloadCheckListBox.CheckedItems.Count;
@@ -462,7 +466,7 @@ namespace MusicBeePlugin
             downloadProgress.ForeColor = System.Drawing.Color.FromArgb(mbApiInterface.Setting_GetSkinElementColour(SkinElement.SkinInputPanel, ElementState.ElementStateDefault, ElementComponent.ComponentForeground));
             syncPanel.downloadTableLayout.Controls.Add(downloadProgress, 0, 2);
 
-            TransferUtility transferUitlity = new TransferUtility(client);
+            TransferUtility transferUitlity = new TransferUtility(s3Client);
             object[] filesToDownload = new object[syncPanel.downloadCheckListBox.CheckedItems.Count];
             syncPanel.downloadCheckListBox.CheckedItems.CopyTo(filesToDownload, 0);
 
@@ -482,9 +486,8 @@ namespace MusicBeePlugin
             syncPanel.uploadTableLayout.Controls.Remove(syncPanel.startUploadButton);
             string dataPath = $"{mbApiInterface.Setting_GetPersistentStoragePath()}{configFile}";
             string[] settings = File.ReadAllLines(dataPath);
-            string bucketRegion = utils.GetIniValue(settings[0]);
-            string bucketName = utils.GetIniValue(settings[1]);
-            string libraryRoot = utils.GetIniValue(settings[2]);
+            string bucketName = utils.GetIniValue(settings[2]);
+            string libraryRoot = utils.GetIniValue(settings[3]);
             bool emailEnabled = Convert.ToBoolean(utils.GetIniValue(settings[4]));
 
             NewProgressBar uploadProgress = new NewProgressBar();
@@ -493,7 +496,7 @@ namespace MusicBeePlugin
             uploadProgress.ForeColor = System.Drawing.Color.FromArgb(mbApiInterface.Setting_GetSkinElementColour(SkinElement.SkinInputPanel, ElementState.ElementStateDefault, ElementComponent.ComponentForeground));
             syncPanel.uploadTableLayout.Controls.Add(uploadProgress, 0, 2);
 
-            TransferUtility transferUitlity = new TransferUtility(client);
+            TransferUtility transferUitlity = new TransferUtility(s3Client);
             object[] filesToUpload = new object[syncPanel.uploadCheckListBox.CheckedItems.Count];
             syncPanel.uploadCheckListBox.CheckedItems.CopyTo(filesToUpload, 0);
 
@@ -531,7 +534,7 @@ namespace MusicBeePlugin
                         return;
                 }
 
-                notify.SendNotification(mbApiInterface, settings, client, newFiles, updatedFiles);
+                notify.SendNotification(mbApiInterface, settings, s3Client, newFiles, updatedFiles);
             }
         }
 
