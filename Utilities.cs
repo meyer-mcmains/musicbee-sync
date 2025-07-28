@@ -42,7 +42,7 @@ namespace MusicBeePlugin
         public void WriteTotalToIni(string file, int totalFiles)
         {
             string[] arrLine = File.ReadAllLines(file);
-            arrLine[3] = $"numFiles={totalFiles}";
+            arrLine[5] = $"numFiles={totalFiles}";
             File.WriteAllLines(file, arrLine);
         }
 
