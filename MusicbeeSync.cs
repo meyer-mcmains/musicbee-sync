@@ -37,7 +37,7 @@ namespace MusicBeePlugin
             about.MinInterfaceVersion = MinInterfaceVersion;
             about.MinApiRevision = MinApiRevision;
             about.ReceiveNotifications = (ReceiveNotificationFlags.PlayerEvents | ReceiveNotificationFlags.TagEvents);
-            about.ConfigurationPanelHeight = 215;
+            about.ConfigurationPanelHeight = 300;
             return about;
         }
 
@@ -49,6 +49,7 @@ namespace MusicBeePlugin
         private TextBox emailBucketNameTextBox;
         private TextBox emailSendFromTextBox;
         private TextBox emailSendToTextBox;
+        private TextBox s3ServiceUrlTextBox;
         private int totalFiles = 0;
 
         public bool Configure(IntPtr panelHandle)
@@ -62,124 +63,99 @@ namespace MusicBeePlugin
             if (panelHandle != IntPtr.Zero)
             {
                 Panel configPanel = (Panel)Panel.FromHandle(panelHandle);
+                TableLayoutPanel tableLayoutPanel = new TableLayoutPanel();
+                tableLayoutPanel.Dock = DockStyle.Fill;
+                tableLayoutPanel.ColumnCount = 2;
+                configPanel.Controls.Add(tableLayoutPanel);
 
-                // accessKey
-                Label accessKeyLabel = new Label
-                {
-                    AutoSize = true,
-                    Location = new Point(0, 5),
-                    Text = "Access Key"
-                };
+                // accessKey 
+                Label accessKeyLabel = new Label { Text = "Access Key" };
+                tableLayoutPanel.Controls.Add(accessKeyLabel, 0, 0);
+
                 accessKeyTextBox = new TextBox();
-                accessKeyTextBox.Bounds = new Rectangle(110, 5, 200, accessKeyTextBox.Height);
+                tableLayoutPanel.Controls.Add(accessKeyTextBox, 1, 0);
 
                 // accessKey
-                Label secretKeyLabel = new Label
-                {
-                    AutoSize = true,
-                    Location = new Point(0, 30),
-                    Text = "Secret Key"
-                };
+                Label secretKeyLabel = new Label { Text = "Secret Key" };
+                tableLayoutPanel.Controls.Add(secretKeyLabel, 0, 1);
+
                 secretKeyTextBox = new TextBox();
-                secretKeyTextBox.Bounds = new Rectangle(110, 30, 200, secretKeyTextBox.Height);
+                tableLayoutPanel.Controls.Add(secretKeyTextBox, 1, 1);
+
+                // s3 service url
+                Label s3ServiceUrl = new Label { Text = "S3 Service URL" };
+                tableLayoutPanel.Controls.Add(s3ServiceUrl, 0, 2);
+
+                s3ServiceUrlTextBox = new TextBox();
+                tableLayoutPanel.Controls.Add(s3ServiceUrlTextBox, 1, 2);
 
                 // bucketName
-                Label bucketNameLabel = new Label
-                {
-                    AutoSize = true,
-                    Location = new Point(0, 55)
-                };
+                Label bucketNameLabel = new Label { Text = "Bucket Name" };
+                tableLayoutPanel.Controls.Add(bucketNameLabel, 0, 3);
+
                 bucketNameTextBox = new TextBox();
-                bucketNameLabel.Text = "Bucket Name";
-                bucketNameTextBox.Bounds = new Rectangle(110, 55, 200, bucketNameTextBox.Height);
+                tableLayoutPanel.Controls.Add(bucketNameTextBox, 1, 3);
 
                 // libraryRoot
-                Label libraryRootLabel = new Label
-                {
-                    AutoSize = true,
-                    Location = new Point(0, 80),
-                    Text = "Library Root"
-                };
-                libraryRootTextBox = new TextBox();
-                libraryRootTextBox.Bounds = new Rectangle(110, 80, 200, libraryRootTextBox.Height);
+                Label libraryRootLabel = new Label { Text = "Library Root" };
+                tableLayoutPanel.Controls.Add(libraryRootLabel, 0, 4);
 
-                // EMAIL NOTIFICATIONS
+                libraryRootTextBox = new TextBox();
+                tableLayoutPanel.Controls.Add(libraryRootTextBox, 1, 4);
+
+                /// EMAIL NOTIFICATIONS
 
                 // Enable Notifications
-                Label enableEmailsLabel = new Label
-                {
-                    AutoSize = true,
-                    Location = new Point(0, 105),
-                    Text = "Send Emails"
-                };
+                Label enableEmailsLabel = new Label { Text = "Send Emails" };
+                tableLayoutPanel.Controls.Add(enableEmailsLabel, 0, 5);
+
                 enableEmailCheckbox = new CheckBox();
-                enableEmailCheckbox.Bounds = new Rectangle(110, 105, 200, enableEmailCheckbox.Height);
+                tableLayoutPanel.Controls.Add(enableEmailCheckbox, 1, 5);
 
                 // Email Images S3 Bucket Name
-                Label emailBucketLabel = new Label
-                {
-                    AutoSize = true,
-                    Location = new Point(0, 130),
-                    Text = "Email Image Bucket"
-                };
+                Label emailBucketLabel = new Label { Text = "Email Image Bucket" };
+                tableLayoutPanel.Controls.Add(emailBucketLabel, 0, 6);
+
                 emailBucketNameTextBox = new TextBox();
-                emailBucketNameTextBox.Bounds = new Rectangle(110, 130, 200, emailBucketNameTextBox.Height);
+                tableLayoutPanel.Controls.Add(emailBucketNameTextBox, 1, 6);
 
                 // Send From Address
-                Label emailSendFromLabel = new Label
-                {
-                    AutoSize = true,
-                    Location = new Point(0, 155),
-                    Text = "Send From Address"
-                };
+                Label emailSendFromLabel = new Label { Text = "Send From Address" };
+                tableLayoutPanel.Controls.Add(emailSendFromLabel, 0, 7);
+
                 emailSendFromTextBox = new TextBox();
-                emailSendFromTextBox.Bounds = new Rectangle(110, 155, 200, emailSendFromTextBox.Height);
+                tableLayoutPanel.Controls.Add(emailSendFromTextBox, 1, 7);
 
                 // Send To Addresses
-                Label emailSendToLabel = new Label
-                {
-                    AutoSize = true,
-                    Location = new Point(0, 180),
-                    Text = "Send To Addresses, Delimite Addresses With A Space"
-                };
+                Label emailSendToLabel = new Label { Text = "Send To Addresses, Delimite Addresses With A Space" };
+                tableLayoutPanel.Controls.Add(emailSendToLabel, 0, 8);
+
                 emailSendToTextBox = new TextBox();
-                emailSendToTextBox.Bounds = new Rectangle(0, 195, 500, emailSendFromTextBox.Height);
+                tableLayoutPanel.Controls.Add(emailSendToTextBox, 1, 8);
 
-                // load settings from ini
-                if (File.Exists(dataPath))
+                string[] config = File.Exists(dataPath) ? File.ReadAllLines(dataPath) : new string[] { };
+                var controlsEnumerator = tableLayoutPanel.Controls.GetEnumerator();
+
+                for (var i = 0; controlsEnumerator.MoveNext() == true; i++)
                 {
-                    string[] config = File.ReadAllLines(dataPath);
-                    accessKeyTextBox.Text = (config.Length > 0) ? utils.GetIniValue(config[0]) : string.Empty;
-                    secretKeyTextBox.Text = (config.Length > 1) ? utils.GetIniValue(config[1]) : string.Empty;
-                    bucketNameTextBox.Text = (config.Length > 2) ? utils.GetIniValue(config[2]) : string.Empty;
-                    libraryRootTextBox.Text = (config.Length > 3) ? utils.GetIniValue(config[3]) : string.Empty;
-                    totalFiles = (config.Length > 4) ? Convert.ToInt16(utils.GetIniValue(config[4])) : 0;
-                    enableEmailCheckbox.Checked = (config.Length > 5) ? Convert.ToBoolean(utils.GetIniValue(config[5])) : false;
-                    emailBucketNameTextBox.Text = (config.Length > 6) ? utils.GetIniValue(config[6]) : string.Empty;
-                    emailSendFromTextBox.Text = (config.Length > 7) ? utils.GetIniValue(config[7]) : string.Empty;
-                    emailSendToTextBox.Text = (config.Length > 8) ? utils.GetIniValue(config[8]) : string.Empty;
-                }
+                    var control = controlsEnumerator.Current;
 
-                // add the controls
-                configPanel.Controls.AddRange(new Control[] {
-                    accessKeyLabel,
-                    accessKeyTextBox,
-                    secretKeyLabel,
-                    secretKeyTextBox,
-                    bucketNameLabel,
-                    bucketNameTextBox,
-                    libraryRootLabel,
-                    libraryRootTextBox,
-                    enableEmailsLabel,
-                    enableEmailCheckbox,
-                    emailBucketLabel,
-                    emailBucketNameTextBox,
-                    emailSendFromLabel,
-                    emailSendFromTextBox,
-                    emailSendToLabel,
-                    emailSendToTextBox
-                });
+                    if (control is TextBox)
+                    {
+                        var textBox = (TextBox)control;
+                        var textBoxIndex = i / 2;
+                        textBox.Text = config.Length > textBoxIndex ? utils.GetIniValue(config[textBoxIndex]) : String.Empty;
+                        textBox.Dock = DockStyle.Fill;
+                    }
+
+                    if (control is Label)
+                    {
+                        Label label = (Label)control;
+                        label.TextAlign = ContentAlignment.MiddleRight;
+                    }
+                }
             }
+
             return false;
         }
 
@@ -190,6 +166,7 @@ namespace MusicBeePlugin
             File.WriteAllLines(dataPath, new string[] {
                 $"accessKey={accessKeyTextBox.Text.Trim()}",
                 $"secretKey={secretKeyTextBox.Text.Trim()}",
+                $"s3BucketUrl={s3ServiceUrlTextBox.Text.Trim()}",
                 $"bucketName={bucketNameTextBox.Text.Trim()}",
                 $"libraryRoot={libraryRootTextBox.Text.Trim()}",
                 $"numFiles={totalFiles}",
@@ -305,16 +282,18 @@ namespace MusicBeePlugin
             string[] settings = File.ReadAllLines(dataPath);
             string accessKey = utils.GetIniValue(settings[0]);
             string secretKey = utils.GetIniValue(settings[1]);
-            string bucketName = utils.GetIniValue(settings[2]);
-            string libraryRoot = utils.GetIniValue(settings[3]);
-            totalFiles = Convert.ToInt16(utils.GetIniValue(settings[4]));
+            string serviceUrl = utils.GetIniValue(settings[2]);
+            string bucketName = utils.GetIniValue(settings[3]);
+            string libraryRoot = utils.GetIniValue(settings[4]);
+
+            totalFiles = Convert.ToInt16(utils.GetIniValue(settings[5]));
 
             string[] library = null;
 
             var credentials = new BasicAWSCredentials(accessKey, secretKey);
             s3Client = new AmazonS3Client(credentials, new AmazonS3Config
             {
-                ServiceURL = "https://8e1800857d4a4eb457bf2faa233676c6.r2.cloudflarestorage.com",
+                ServiceURL = serviceUrl
             });
 
             mbApiInterface.Library_QueryFilesEx("domain=Library", out library);
